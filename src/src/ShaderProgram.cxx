@@ -39,7 +39,7 @@ std::string shaderLog(Gl& gl, const GLuint shader) {
     std::vector<GLchar> buffer(static_cast<std::size_t>(length));
     GLsizei written = 0;
     gl.glGetShaderInfoLog(shader, length, &written, buffer.data());
-    return std::string(buffer.data(), static_cast<std::size_t>(written));
+    return {buffer.data(), static_cast<std::size_t>(written)};
 }
 
 std::string programLog(Gl& gl, const GLuint program) {
@@ -52,7 +52,7 @@ std::string programLog(Gl& gl, const GLuint program) {
     std::vector<GLchar> buffer(static_cast<std::size_t>(length));
     GLsizei written = 0;
     gl.glGetProgramInfoLog(program, length, &written, buffer.data());
-    return std::string(buffer.data(), static_cast<std::size_t>(written));
+    return {buffer.data(), static_cast<std::size_t>(written)};
 }
 
 GLenum toGLStage(const ShaderStage stage) {
@@ -75,7 +75,7 @@ std::expected<GLuint, std::string> compileStage(
     Gl& gl,
     const ShaderSource& source,
     const std::string& stageName
-    ) {
+) {
     const GLuint shader = gl.glCreateShader(toGLStage(source.stage));
     if (shader == 0) {
         return std::unexpected("glCreateShader failed for " + stageName);
@@ -93,7 +93,7 @@ std::expected<GLuint, std::string> compileStage(
         const std::string label = source.debugName.empty() ? stageName : source.debugName;
         return std::unexpected(
             "shader compilation failed (" + label + "):\n" + (log.empty() ? "<no log>" : log)
-            );
+        );
     }
 
     return shader;
@@ -143,7 +143,7 @@ std::string ShaderProgram::stageName(const ShaderStage stage) {
 std::expected<ShaderProgram, std::string> ShaderProgram::fromSources(
     Gl& gl,
     const std::span<const ShaderSource> stages
-    ) {
+) {
     if (stages.empty()) {
         return std::unexpected("no shader stages supplied");
     }
@@ -195,41 +195,56 @@ std::expected<ShaderProgram, std::string> ShaderProgram::fromSources(
     return result;
 }
 
+std::expected<ShaderProgram, std::string> ShaderProgram::fromSources(
+    Gl* gl, const std::span<const ShaderSource> stages) {
+    return fromSources(*gl, stages);
+}
+
 std::expected<ShaderProgram, std::string> ShaderProgram::fromFiles(
     Gl& gl,
     const std::span<const ShaderFile> files
-    ) {
+) {
     if (files.empty()) {
         return std::unexpected("no shader files supplied");
     }
 
     std::vector<ShaderSource> sources;
     sources.reserve(files.size());
-    for (const auto& file : files) {
-        auto text = readTextFile(file.path);
+    for (const auto& [stage, path] : files) {
+        auto text = readTextFile(path);
         if (!text) {
             return std::unexpected(std::move(text.error()));
         }
         sources.push_back(ShaderSource{
-            .stage = file.stage,
+            .stage = stage,
             .source = std::move(*text),
-            .debugName = file.path.string(),
+            .debugName = path.string(),
         });
     }
 
     return fromSources(gl, sources);
 }
 
+std::expected<const ShaderProgram, std::string> ShaderProgram::fromFiles(
+    Gl* gl, const std::span<const ShaderFile> files) {
+    return fromFiles(*gl, files);
+}
+
 std::expected<ShaderProgram, std::string> ShaderProgram::fromFiles(
     Gl& gl,
-    const std::filesystem::path& vertexPath,
-    const std::filesystem::path& fragmentPath
-    ) {
+    const std::filesystem::path vertexPath,
+    const std::filesystem::path fragmentPath
+) {
     const std::array files{
         ShaderFile{.stage = ShaderStage::Vertex, .path = vertexPath},
         ShaderFile{.stage = ShaderStage::Fragment, .path = fragmentPath},
     };
     return fromFiles(gl, files);
+}
+
+std::expected<ShaderProgram, std::string> ShaderProgram::fromFiles(Gl* gl, const std::filesystem::path vertexPath,
+                                                                   const std::filesystem::path fragmentPath) {
+    return fromFiles(*gl, vertexPath, fragmentPath);
 }
 
 void ShaderProgram::destroy(Gl& gl) {
@@ -240,8 +255,16 @@ void ShaderProgram::destroy(Gl& gl) {
     m_uniformCache.clear();
 }
 
+void ShaderProgram::destroy(Gl* gl) {
+    destroy(*gl);
+}
+
 void ShaderProgram::bind(Gl& gl) const {
     gl.glUseProgram(m_program);
+}
+
+void ShaderProgram::bind(Gl* gl) const {
+    bind(*gl);
 }
 
 void ShaderProgram::unbind(Gl& gl) {
@@ -259,6 +282,10 @@ GLint ShaderProgram::location(Gl& gl, const std::string_view name) const {
     return result;
 }
 
+GLint ShaderProgram::location(Gl* gl, const std::string_view name) const {
+    return location(*gl, name);
+}
+
 bool ShaderProgram::setInt(Gl& gl, const std::string_view name, const int value) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
@@ -266,6 +293,31 @@ bool ShaderProgram::setInt(Gl& gl, const std::string_view name, const int value)
     }
     gl.glUniform1i(loc, value);
     return true;
+}
+
+bool ShaderProgram::setInt(Gl* gl, const std::string_view name, const int value) const {
+    return setInt(*gl, name, value);
+}
+
+bool ShaderProgram::setIVec2(Gl& gl, const std::string_view name, const int x, const int y) const {
+    const GLint loc = location(gl, name);
+    if (loc < 0) {
+        return false;
+    }
+    gl.glUniform2i(loc, x, y);
+    return true;
+}
+
+bool ShaderProgram::setIVec2(Gl* gl, const std::string_view name, const int x, const int y) const {
+    return setIVec2(*gl, name, x, y);
+}
+
+bool ShaderProgram::setIVec2(Gl& gl, const std::string_view name, const cadm::Vec2I& value) const {
+    return setIVec2(gl, name, value.x, value.y);
+}
+
+bool ShaderProgram::setIVec2(Gl* gl, const std::string_view name, const cadm::Vec2I& value) const {
+    return setIVec2(*gl, name, value);
 }
 
 bool ShaderProgram::setFloat(Gl& gl, const std::string_view name, const float value) const {
@@ -277,6 +329,10 @@ bool ShaderProgram::setFloat(Gl& gl, const std::string_view name, const float va
     return true;
 }
 
+bool ShaderProgram::setFloat(Gl* gl, const std::string_view name, const float value) const {
+    return setFloat(*gl, name, value);
+}
+
 bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const float x, const float y) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
@@ -286,8 +342,16 @@ bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const float x, 
     return true;
 }
 
+bool ShaderProgram::setVec2(Gl* gl, const std::string_view name, const float x, const float y) const {
+    return setVec2(*gl, name, x, y);
+}
+
 bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const cadm::Vec2& value) const {
     return setVec2(gl, name, value.x, value.y);
+}
+
+bool ShaderProgram::setVec2(Gl* gl, const std::string_view name, const cadm::Vec2& value) const {
+    return setVec2(*gl, name, value.x, value.y);
 }
 
 bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const float x, const float y, const float z) const {
@@ -299,8 +363,16 @@ bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const float x, 
     return true;
 }
 
+bool ShaderProgram::setVec3(Gl* gl, const std::string_view name, const float x, const float y, const float z) const {
+    return setVec3(*gl, name, x, y, z);
+}
+
 bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const cadm::Vec3& value) const {
     return setVec3(gl, name, value.x, value.y, value.z);
+}
+
+bool ShaderProgram::setVec3(Gl* gl, const std::string_view name, const cadm::Vec3& value) const {
+    return setVec3(*gl, name, value);
 }
 
 bool ShaderProgram::setVec4(
@@ -310,7 +382,7 @@ bool ShaderProgram::setVec4(
     const float y,
     const float z,
     const float w
-    ) const {
+) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -319,8 +391,17 @@ bool ShaderProgram::setVec4(
     return true;
 }
 
+bool ShaderProgram::setVec4(Gl* gl, const std::string_view name, const float x, const float y, const float z,
+                            const float w) const {
+    return setVec4(*gl, name, x, y, z, w);
+}
+
 bool ShaderProgram::setVec4(Gl& gl, const std::string_view name, const cadm::Vec4& value) const {
     return setVec4(gl, name, value.x, value.y, value.z, value.w);
+}
+
+bool ShaderProgram::setVec4(Gl* gl, const std::string_view name, const cadm::Vec4& value) const {
+    return setVec4(*gl, name, value);
 }
 
 bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const float* columnMajor) const {
@@ -332,8 +413,16 @@ bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const float* co
     return true;
 }
 
+bool ShaderProgram::setMat4(Gl* gl, const std::string_view name, const float* columnMajor) const {
+    return setMat4(*gl, name, columnMajor);
+}
+
 bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const cadm::Mat4& value) const {
     return setMat4(gl, name, value.data);
+}
+
+bool ShaderProgram::setMat4(Gl* gl, const std::string_view name, const cadm::Mat4& value) const {
+    return setMat4(*gl, name, value);
 }
 
 bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const float* columnMajor) const {
@@ -345,8 +434,16 @@ bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const float* co
     return true;
 }
 
-bool ShaderProgram::setMat3(Gl& gl, std::string_view name, const cadm::Mat3& value) const {
+bool ShaderProgram::setMat3(Gl* gl, const std::string_view name, const float* columnMajor) const {
+    return setMat3(*gl, name, columnMajor);
+}
+
+bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const cadm::Mat3& value) const {
     return setMat3(gl, name, value.data);
+}
+
+bool ShaderProgram::setMat3(Gl* gl, const std::string_view name, const cadm::Mat3& value) const {
+    return setMat3(*gl, name, value);
 }
 
 } // namespace cadg

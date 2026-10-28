@@ -15,7 +15,7 @@
 
 namespace cadg {
 
-/// @brief Owns the VAO/VBO/EBO for one indexed triangle mesh
+/// @brief Owns the VAO/VBO/EBO for one indexed mesh
 ///
 /// The destructor never issues GL calls. it only asserts that the handles were
 /// released
@@ -32,7 +32,17 @@ public:
 
     static std::expected<GpuMesh, std::string> upload(Gl& gl, const MeshData& mesh);
 
-    void draw(Gl& gl) const;
+    /// @brief Draw the mesh
+    /// @tparam Primitive primitive mode used by glDrawElements
+    template <GLenum Primitive = GL_TRIANGLES>
+    void draw(Gl& gl) const {
+        if (m_vao == 0 || m_indexCount == 0) {
+            return;
+        }
+        gl.glBindVertexArray(m_vao);
+        gl.glDrawElements(Primitive, m_indexCount, GL_UNSIGNED_INT, nullptr);
+        gl.glBindVertexArray(0);
+    }
 
     void destroy(Gl& gl);
 

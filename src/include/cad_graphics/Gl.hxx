@@ -36,6 +36,9 @@ struct GlStateSnapshot {
     GLboolean oldBlend = false;
     GLboolean oldDepth = false;
     GLboolean oldCull = false;
+    GLboolean oldDepthMask = GL_TRUE;
+    GLint oldDepthFunc = GL_LESS;
+    GLfloat oldLineWidth = 1.0f;
 
     void save(QOpenGLFunctions_4_5_Core* gl);
     void restore(QOpenGLFunctions_4_5_Core* gl) const;

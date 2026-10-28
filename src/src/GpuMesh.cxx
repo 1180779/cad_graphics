@@ -148,15 +148,6 @@ std::expected<GpuMesh, std::string> GpuMesh::upload(Gl& gl, const MeshData& mesh
     return result;
 }
 
-void GpuMesh::draw(Gl& gl) const {
-    if (m_vao == 0 || m_indexCount == 0) {
-        return;
-    }
-    gl.glBindVertexArray(m_vao);
-    gl.glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, nullptr);
-    gl.glBindVertexArray(0);
-}
-
 void GpuMesh::destroy(Gl& gl) {
     releaseHandles(gl, m_vao, m_vbo, m_ebo);
     m_indexCount = 0;

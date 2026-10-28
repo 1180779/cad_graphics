@@ -47,6 +47,9 @@ void GlStateSnapshot::save(QOpenGLFunctions_4_5_Core* gl) {
     oldBlend = gl->glIsEnabled(GL_BLEND);
     oldDepth = gl->glIsEnabled(GL_DEPTH_TEST);
     oldCull = gl->glIsEnabled(GL_CULL_FACE);
+    gl->glGetBooleanv(GL_DEPTH_WRITEMASK, &oldDepthMask);
+    gl->glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
+    gl->glGetFloatv(GL_LINE_WIDTH, &oldLineWidth);
 
     gl->glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &oldDrawFbo);
     gl->glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &oldReadFbo);
@@ -77,9 +80,12 @@ void GlStateSnapshot::restore(QOpenGLFunctions_4_5_Core* gl) const {
     );
     restoreCap(gl, GL_BLEND, oldBlend);
     restoreCap(gl, GL_DEPTH_TEST, oldDepth);
+    restoreCap(gl, GL_CULL_FACE, oldCull);
+    gl->glDepthMask(oldDepthMask);
+    gl->glDepthFunc(static_cast<GLenum>(oldDepthFunc));
+    gl->glLineWidth(oldLineWidth);
     restoreCap(gl, GL_SCISSOR_TEST, oldScissor);
     gl->glScissor(oldScissorBox[0], oldScissorBox[1], oldScissorBox[2], oldScissorBox[3]);
-    restoreCap(gl, GL_SCISSOR_TEST, oldScissor);
     gl->glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
     gl->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(oldDrawFbo));
     gl->glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(oldReadFbo));

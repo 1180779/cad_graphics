@@ -42,6 +42,8 @@ struct ShaderFile {
     std::filesystem::path path;
 };
 
+class ShaderProgramGlBoundBorrow;
+
 /// @brief Compiled and linked GLSL program
 ///
 /// The destructor never issues GL calls. it only asserts that the handles were
@@ -57,25 +59,42 @@ public:
     ShaderProgram(ShaderProgram&& other) noexcept;
     ShaderProgram& operator=(ShaderProgram&& other) noexcept;
 
+    ShaderProgramGlBoundBorrow borrowWithGlBound(Gl& gl) const;
+    
     static std::expected<ShaderProgram, std::string> fromSources(
         Gl& gl,
         std::span<const ShaderSource> stages
         );
+    static std::expected<ShaderProgram, std::string> fromSources(
+        Gl* gl,
+        std::span<const ShaderSource> stages
+    );
 
     static std::expected<ShaderProgram, std::string> fromFiles(
         Gl& gl,
         std::span<const ShaderFile> files
-        );
+    );
+    static std::expected<const ShaderProgram, std::string> fromFiles(
+        Gl* gl,
+        std::span<const ShaderFile> files
+    );
 
     static std::expected<ShaderProgram, std::string> fromFiles(
         Gl& gl,
-        const std::filesystem::path& vertexPath,
-        const std::filesystem::path& fragmentPath
-        );
+        std::filesystem::path vertexPath,
+        std::filesystem::path fragmentPath
+    );
+    static std::expected<ShaderProgram, std::string> fromFiles(
+        Gl* gl,
+        std::filesystem::path vertexPath,
+        std::filesystem::path fragmentPath
+    );
 
     /// @brief Delete the GL program
     /// @pre Context must be current
     void destroy(Gl& gl);
+    void destroy(Gl* gl);
+
 
     [[nodiscard]] bool valid() const {
         return m_program != 0;
@@ -86,29 +105,48 @@ public:
     }
 
     void bind(Gl& gl) const;
+    void bind(Gl* gl) const;
 
     static void unbind(Gl& gl);
 
     /// @brief Cached glGetUniformLocation lookup
     /// @returns -1 when the uniform does not exist
     [[nodiscard]] GLint location(Gl& gl, std::string_view name) const;
+    [[nodiscard]] GLint location(Gl* gl, std::string_view name) const;
 
-    bool setInt(Gl& gl, std::string_view name, int value) const;
-    bool setFloat(Gl& gl, std::string_view name, float value) const;
-    bool setVec2(Gl& gl, std::string_view name, float x, float y) const;
-    bool setVec2(Gl& gl, std::string_view name, const cadm::Vec2& value) const;
-    bool setVec3(Gl& gl, std::string_view name, float x, float y, float z) const;
-    bool setVec3(Gl& gl, std::string_view name, const cadm::Vec3& value) const;
-    bool setVec4(Gl& gl, std::string_view name, float x, float y, float z, float w) const;
-    bool setVec4(Gl& gl, std::string_view name, const cadm::Vec4& value) const;
+    bool setInt(Gl& gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
+    bool setInt(Gl* gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
+    bool setIVec2(Gl& gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
+    bool setIVec2(Gl* gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
+    bool setIVec2(Gl& gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
+    bool setIVec2(Gl* gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
+    bool setFloat(Gl& gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
+    bool setFloat(Gl* gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
+    bool setVec2(Gl& gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
+    bool setVec2(Gl* gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
+    bool setVec2(Gl& gl, std::string_view name, const cadm::Vec2& value) const; // NOLINT(*-use-nodiscard)
+    bool setVec2(Gl* gl, std::string_view name, const cadm::Vec2& value) const; // NOLINT(*-use-nodiscard)
+    bool setVec3(Gl& gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
+    bool setVec3(Gl* gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
+    bool setVec3(Gl& gl, std::string_view name, const cadm::Vec3& value) const; // NOLINT(*-use-nodiscard)
+    bool setVec3(Gl* gl, std::string_view name, const cadm::Vec3& value) const; // NOLINT(*-use-nodiscard)
+    bool setVec4(Gl& gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
+    bool setVec4(Gl* gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
+    bool setVec4(Gl& gl, std::string_view name, const cadm::Vec4& value) const; // NOLINT(*-use-nodiscard)
+    bool setVec4(Gl* gl, std::string_view name, const cadm::Vec4& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 16 floats in column-major order
-    bool setMat4(Gl& gl, std::string_view name, const float* columnMajor) const;
-    bool setMat4(Gl& gl, std::string_view name, const cadm::Mat4& value) const;
+    bool setMat4(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool setMat4(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool setMat4(Gl& gl, std::string_view name, const cadm::Mat4& value) const; // NOLINT(*-use-nodiscard)
+    bool setMat4(Gl* gl, std::string_view name, const cadm::Mat4& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 9 floats in column-major order
-    bool setMat3(Gl& gl, std::string_view name, const float* columnMajor) const;
-    bool setMat3(Gl& gl, std::string_view name, const cadm::Mat3& value) const;
+    bool setMat3(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool setMat3(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool setMat3(Gl& gl, std::string_view name, const cadm::Mat3& value) const; // NOLINT(*-use-nodiscard)
+    bool setMat3(Gl* gl, std::string_view name, const cadm::Mat3& value) const; // NOLINT(*-use-nodiscard)
+
 
 private:
     static std::string stageName(ShaderStage stage);
