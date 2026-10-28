@@ -12,6 +12,7 @@
 
 #include "Gl.hxx"
 #include "MeshData.hxx"
+#include "VertexLayout.hxx"
 
 namespace cadg {
 
@@ -31,6 +32,7 @@ public:
     GpuMesh& operator=(GpuMesh&& other) noexcept;
 
     static std::expected<GpuMesh, std::string> upload(Gl& gl, const MeshData& mesh);
+    static std::expected<GpuMesh, std::string> upload(Gl& gl, const MeshView& mesh);
 
     /// @brief Draw the mesh
     /// @tparam Primitive primitive mode used by glDrawElements
