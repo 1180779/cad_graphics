@@ -19,6 +19,33 @@ void glSetDefaults();
 /// @returns nullptr when there is no current context or 4.5 is unavailable
 Gl* getGl();
 
+struct GlStateSnapshot {
+    GLint oldDrawFbo = 0;
+    GLint oldReadFbo = 0;
+    GLint oldViewport[4]{};
+    GLint oldScissorBox[4]{};
+    GLint oldProgram = 0;
+    GLint oldVao = 0;
+    GLint oldBlendEquation = GL_FUNC_ADD;
+    GLint oldBlendEquationAlpha = GL_FUNC_ADD;
+    GLint oldBlendSrc = GL_ONE;
+    GLint oldBlendDst = GL_ZERO;
+    GLint oldBlendSrcAlpha = GL_ONE;
+    GLint oldBlendDstAlpha = GL_ZERO;
+    GLboolean oldScissor = false;
+    GLboolean oldBlend = false;
+    GLboolean oldDepth = false;
+    GLboolean oldCull = false;
+
+    void save(QOpenGLFunctions_4_5_Core* gl);
+    void restore(QOpenGLFunctions_4_5_Core* gl) const;
+    static GlStateSnapshot create(QOpenGLFunctions_4_5_Core* gl);
+    
+private:
+    static void restoreCap(QOpenGLFunctions_4_5_Core* gl, GLenum cap, GLboolean enable);
+};
+
+
 } // namespace cadg
 
 #endif // CAD_GRAPHICS_HEADER_SRC_INCLUDE_CAD_GRAPHICS_GL_HXX
