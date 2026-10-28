@@ -235,6 +235,55 @@ MeshData makeCylinder(const float radius, const float height, int sectorCount, i
     return mesh;
 }
 
+MeshData makeSphere(const float radius, int sectorCount, int stackCount) {
+    MeshData mesh;
+    mesh.name = "sphere";
+
+    sectorCount = std::max(sectorCount, 3);
+    stackCount = std::max(stackCount, 2);
+
+    const float safeRadius = std::max(radius, 0.0f);
+    const float sectorStep = 2.0f * std::numbers::pi_v<float> / static_cast<float>(sectorCount);
+    const float stackStep = std::numbers::pi_v<float> / static_cast<float>(stackCount);
+
+    for (int i = 0; i <= stackCount; ++i) {
+        const float phi = stackStep * static_cast<float>(i);
+        const float y = std::cos(phi);
+        const float ringRadius = std::sin(phi);
+
+        for (int j = 0; j <= sectorCount; ++j) {
+            const float theta = sectorStep * static_cast<float>(j);
+            const cadm::Vec3 normal{
+                ringRadius * std::cos(theta),
+                y,
+                ringRadius * std::sin(theta),
+            };
+
+            mesh.vertices.push_back(Vertex{
+                .position = normal * safeRadius,
+                .normal = normal,
+                .texCoord = {
+                    static_cast<float>(j) / static_cast<float>(sectorCount),
+                    1.0f - static_cast<float>(i) / static_cast<float>(stackCount),
+                },
+            });
+        }
+    }
+
+    for (int i = 0; i < stackCount; ++i) {
+        const auto k1 = static_cast<Index>(i * (sectorCount + 1));
+        const auto k2 = k1 + sectorCount + 1;
+        for (int j = 0; j < sectorCount; ++j) {
+            const auto current = static_cast<Index>(j);
+            const auto next = static_cast<Index>(j + 1);
+            addTriangle(mesh.indices, k1 + current, k1 + next, k2 + current);
+            addTriangle(mesh.indices, k1 + next, k2 + next, k2 + current);
+        }
+    }
+
+    return mesh;
+}
+
 MeshData makeSpring(const SpringParameters& parameters) {
     MeshData mesh;
     mesh.name = "spring";

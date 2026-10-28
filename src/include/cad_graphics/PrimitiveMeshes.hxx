@@ -34,6 +34,9 @@ MeshData makeBox(const cadm::Vec3& size);
 /// @brief Capped cylinder centered at the origin, axis along Y
 MeshData makeCylinder(float radius, float height, int sectorCount = 32, int stackCount = 5);
 
+/// @brief UV sphere centered at the origin
+MeshData makeSphere(float radius, int sectorCount = 32, int stackCount = 16);
+
 /// @brief Helical spring wire, starting at <tt>y=0</tt> and ending at
 /// <tt>y=height</tt>
 MeshData makeSpring(const SpringParameters& parameters = {});
