@@ -225,7 +225,7 @@ std::expected<ShaderProgram, std::string> ShaderProgram::fromFiles(
     return fromSources(gl, sources);
 }
 
-std::expected<const ShaderProgram, std::string> ShaderProgram::fromFiles(
+std::expected<ShaderProgram, std::string> ShaderProgram::fromFiles(
     Gl* gl, const std::span<const ShaderFile> files) {
     return fromFiles(*gl, files);
 }
@@ -286,7 +286,7 @@ GLint ShaderProgram::location(Gl* gl, const std::string_view name) const {
     return location(*gl, name);
 }
 
-bool ShaderProgram::setInt(Gl& gl, const std::string_view name, const int value) const {
+bool ShaderProgram::uniform1i(Gl& gl, const std::string_view name, const int value) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -295,11 +295,11 @@ bool ShaderProgram::setInt(Gl& gl, const std::string_view name, const int value)
     return true;
 }
 
-bool ShaderProgram::setInt(Gl* gl, const std::string_view name, const int value) const {
-    return setInt(*gl, name, value);
+bool ShaderProgram::uniform1i(Gl* gl, const std::string_view name, const int value) const {
+    return uniform1i(*gl, name, value);
 }
 
-bool ShaderProgram::setIVec2(Gl& gl, const std::string_view name, const int x, const int y) const {
+bool ShaderProgram::uniform2i(Gl& gl, const std::string_view name, const int x, const int y) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -308,19 +308,19 @@ bool ShaderProgram::setIVec2(Gl& gl, const std::string_view name, const int x, c
     return true;
 }
 
-bool ShaderProgram::setIVec2(Gl* gl, const std::string_view name, const int x, const int y) const {
-    return setIVec2(*gl, name, x, y);
+bool ShaderProgram::uniform2i(Gl* gl, const std::string_view name, const int x, const int y) const {
+    return uniform2i(*gl, name, x, y);
 }
 
-bool ShaderProgram::setIVec2(Gl& gl, const std::string_view name, const cadm::Vec2I& value) const {
-    return setIVec2(gl, name, value.x, value.y);
+bool ShaderProgram::uniform2i(Gl& gl, const std::string_view name, const cadm::Vec2I& value) const {
+    return uniform2i(gl, name, value.x, value.y);
 }
 
-bool ShaderProgram::setIVec2(Gl* gl, const std::string_view name, const cadm::Vec2I& value) const {
-    return setIVec2(*gl, name, value);
+bool ShaderProgram::uniform2i(Gl* gl, const std::string_view name, const cadm::Vec2I& value) const {
+    return uniform2i(*gl, name, value);
 }
 
-bool ShaderProgram::setFloat(Gl& gl, const std::string_view name, const float value) const {
+bool ShaderProgram::uniform1f(Gl& gl, const std::string_view name, const float value) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -329,11 +329,11 @@ bool ShaderProgram::setFloat(Gl& gl, const std::string_view name, const float va
     return true;
 }
 
-bool ShaderProgram::setFloat(Gl* gl, const std::string_view name, const float value) const {
-    return setFloat(*gl, name, value);
+bool ShaderProgram::uniform1f(Gl* gl, const std::string_view name, const float value) const {
+    return uniform1f(*gl, name, value);
 }
 
-bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const float x, const float y) const {
+bool ShaderProgram::uniform2f(Gl& gl, const std::string_view name, const float x, const float y) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -342,19 +342,19 @@ bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const float x, 
     return true;
 }
 
-bool ShaderProgram::setVec2(Gl* gl, const std::string_view name, const float x, const float y) const {
-    return setVec2(*gl, name, x, y);
+bool ShaderProgram::uniform2f(Gl* gl, const std::string_view name, const float x, const float y) const {
+    return uniform2f(*gl, name, x, y);
 }
 
-bool ShaderProgram::setVec2(Gl& gl, const std::string_view name, const cadm::Vec2& value) const {
-    return setVec2(gl, name, value.x, value.y);
+bool ShaderProgram::uniform2f(Gl& gl, const std::string_view name, const Vec2f& value) const {
+    return uniform2f(gl, name, value.x, value.y);
 }
 
-bool ShaderProgram::setVec2(Gl* gl, const std::string_view name, const cadm::Vec2& value) const {
-    return setVec2(*gl, name, value.x, value.y);
+bool ShaderProgram::uniform2f(Gl* gl, const std::string_view name, const Vec2f& value) const {
+    return uniform2f(*gl, name, value.x, value.y);
 }
 
-bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const float x, const float y, const float z) const {
+bool ShaderProgram::uniform3f(Gl& gl, const std::string_view name, const float x, const float y, const float z) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -363,19 +363,19 @@ bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const float x, 
     return true;
 }
 
-bool ShaderProgram::setVec3(Gl* gl, const std::string_view name, const float x, const float y, const float z) const {
-    return setVec3(*gl, name, x, y, z);
+bool ShaderProgram::uniform3f(Gl* gl, const std::string_view name, const float x, const float y, const float z) const {
+    return uniform3f(*gl, name, x, y, z);
 }
 
-bool ShaderProgram::setVec3(Gl& gl, const std::string_view name, const cadm::Vec3& value) const {
-    return setVec3(gl, name, value.x, value.y, value.z);
+bool ShaderProgram::uniform3f(Gl& gl, const std::string_view name, const Vec3f& value) const {
+    return uniform3f(gl, name, value.x, value.y, value.z);
 }
 
-bool ShaderProgram::setVec3(Gl* gl, const std::string_view name, const cadm::Vec3& value) const {
-    return setVec3(*gl, name, value);
+bool ShaderProgram::uniform3f(Gl* gl, const std::string_view name, const Vec3f& value) const {
+    return uniform3f(*gl, name, value);
 }
 
-bool ShaderProgram::setVec4(
+bool ShaderProgram::uniform4f(
     Gl& gl,
     const std::string_view name,
     const float x,
@@ -391,20 +391,20 @@ bool ShaderProgram::setVec4(
     return true;
 }
 
-bool ShaderProgram::setVec4(Gl* gl, const std::string_view name, const float x, const float y, const float z,
+bool ShaderProgram::uniform4f(Gl* gl, const std::string_view name, const float x, const float y, const float z,
                             const float w) const {
-    return setVec4(*gl, name, x, y, z, w);
+    return uniform4f(*gl, name, x, y, z, w);
 }
 
-bool ShaderProgram::setVec4(Gl& gl, const std::string_view name, const cadm::Vec4& value) const {
-    return setVec4(gl, name, value.x, value.y, value.z, value.w);
+bool ShaderProgram::uniform4f(Gl& gl, const std::string_view name, const Vec4f& value) const {
+    return uniform4f(gl, name, value.x, value.y, value.z, value.w);
 }
 
-bool ShaderProgram::setVec4(Gl* gl, const std::string_view name, const cadm::Vec4& value) const {
-    return setVec4(*gl, name, value);
+bool ShaderProgram::uniform4f(Gl* gl, const std::string_view name, const Vec4f& value) const {
+    return uniform4f(*gl, name, value);
 }
 
-bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const float* columnMajor) const {
+bool ShaderProgram::uniformMatrix4fv(Gl& gl, const std::string_view name, const float* columnMajor) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -413,19 +413,19 @@ bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const float* co
     return true;
 }
 
-bool ShaderProgram::setMat4(Gl* gl, const std::string_view name, const float* columnMajor) const {
-    return setMat4(*gl, name, columnMajor);
+bool ShaderProgram::uniformMatrix4fv(Gl* gl, const std::string_view name, const float* columnMajor) const {
+    return uniformMatrix4fv(*gl, name, columnMajor);
 }
 
-bool ShaderProgram::setMat4(Gl& gl, const std::string_view name, const cadm::Mat4& value) const {
-    return setMat4(gl, name, value.data);
+bool ShaderProgram::uniformMatrix4f(Gl& gl, const std::string_view name, const Mat4f& value) const {
+    return uniformMatrix4fv(gl, name, value.data);
 }
 
-bool ShaderProgram::setMat4(Gl* gl, const std::string_view name, const cadm::Mat4& value) const {
-    return setMat4(*gl, name, value);
+bool ShaderProgram::uniformMatrix4f(Gl* gl, const std::string_view name, const Mat4f& value) const {
+    return uniformMatrix4f(*gl, name, value);
 }
 
-bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const float* columnMajor) const {
+bool ShaderProgram::uniformMatrix3fv(Gl& gl, const std::string_view name, const float* columnMajor) const {
     const GLint loc = location(gl, name);
     if (loc < 0) {
         return false;
@@ -434,16 +434,16 @@ bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const float* co
     return true;
 }
 
-bool ShaderProgram::setMat3(Gl* gl, const std::string_view name, const float* columnMajor) const {
-    return setMat3(*gl, name, columnMajor);
+bool ShaderProgram::uniformMatrix3fv(Gl* gl, const std::string_view name, const float* columnMajor) const {
+    return uniformMatrix3fv(*gl, name, columnMajor);
 }
 
-bool ShaderProgram::setMat3(Gl& gl, const std::string_view name, const cadm::Mat3& value) const {
-    return setMat3(gl, name, value.data);
+bool ShaderProgram::uniformMatrix3f(Gl& gl, const std::string_view name, const Mat3f& value) const {
+    return uniformMatrix3fv(gl, name, value.data);
 }
 
-bool ShaderProgram::setMat3(Gl* gl, const std::string_view name, const cadm::Mat3& value) const {
-    return setMat3(*gl, name, value);
+bool ShaderProgram::uniformMatrix3f(Gl* gl, const std::string_view name, const Mat3f& value) const {
+    return uniformMatrix3f(*gl, name, value);
 }
 
 } // namespace cadg

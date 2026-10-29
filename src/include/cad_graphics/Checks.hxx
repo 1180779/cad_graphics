@@ -54,7 +54,7 @@ inline bool logGlErrorsIfAny(const char *file, const int line) {
 
 #define GET_GL_ERRORS() \
     do { \
-        logGlErrorsIfAny(__FILE__, __LINE__); \
+        ::cadg::logGlErrorsIfAny(__FILE__, __LINE__); \
     } while(0)
 
 #define SHADER_SET_UNIFORM_CHECK(expr) \

@@ -19,54 +19,54 @@ GLint ShaderProgramGlBoundBorrow::location(const std::string_view name) const {
     return m_borrowedProgram.location(m_gl, name);
 }
 
-bool ShaderProgramGlBoundBorrow::setInt(const std::string_view name, const int value) const {
-    return m_borrowedProgram.setInt(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniform1i(const std::string_view name, const int value) const {
+    return m_borrowedProgram.uniform1i(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setFloat(const std::string_view name, const float value) const {
-    return m_borrowedProgram.setFloat(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniform1f(const std::string_view name, const float value) const {
+    return m_borrowedProgram.uniform1f(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec2(const std::string_view name, const float x, const float y) const {
-    return m_borrowedProgram.setVec2(m_gl, name, x, y);
+bool ShaderProgramGlBoundBorrow::uniform2f(const std::string_view name, const float x, const float y) const {
+    return m_borrowedProgram.uniform2f(m_gl, name, x, y);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec2(const std::string_view name, const cadm::Vec2& value) const {
-    return m_borrowedProgram.setVec2(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniform2f(const std::string_view name, const Vec2f& value) const {
+    return m_borrowedProgram.uniform2f(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec3(const std::string_view name, const float x, const float y,
+bool ShaderProgramGlBoundBorrow::uniform3f(const std::string_view name, const float x, const float y,
                                                 const float z) const {
-    return m_borrowedProgram.setVec3(m_gl, name, x, y, z);
+    return m_borrowedProgram.uniform3f(m_gl, name, x, y, z);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec3(const std::string_view name, const cadm::Vec3& value) const {
-    return m_borrowedProgram.setVec3(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniform3f(const std::string_view name, const Vec3f& value) const {
+    return m_borrowedProgram.uniform3f(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec4(const std::string_view name, const float x, const float y,
+bool ShaderProgramGlBoundBorrow::uniform4f(const std::string_view name, const float x, const float y,
                                                 const float z, const float w) const {
-    return m_borrowedProgram.setVec4(m_gl, name, x, y, z, w);
+    return m_borrowedProgram.uniform4f(m_gl, name, x, y, z, w);
 }
 
-bool ShaderProgramGlBoundBorrow::setVec4(const std::string_view name, const cadm::Vec4& value) const {
-    return m_borrowedProgram.setVec4(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniform4f(const std::string_view name, const Vec4f& value) const {
+    return m_borrowedProgram.uniform4f(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setMat4(const std::string_view name, const float* columnMajor) const {
-    return m_borrowedProgram.setMat4(m_gl, name, columnMajor);
+bool ShaderProgramGlBoundBorrow::uniformMatrix4fv(const std::string_view name, const float* columnMajor) const {
+    return m_borrowedProgram.uniformMatrix4fv(m_gl, name, columnMajor);
 }
 
-bool ShaderProgramGlBoundBorrow::setMat4(const std::string_view name, const cadm::Mat4& value) const {
-    return m_borrowedProgram.setMat4(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniformMatrix4f(const std::string_view name, const Mat4f& value) const {
+    return m_borrowedProgram.uniformMatrix4f(m_gl, name, value);
 }
 
-bool ShaderProgramGlBoundBorrow::setMat3(const std::string_view name, const float* columnMajor) const {
-    return m_borrowedProgram.setMat3(m_gl, name, columnMajor);
+bool ShaderProgramGlBoundBorrow::uniformMatrix3fv(const std::string_view name, const float* columnMajor) const {
+    return m_borrowedProgram.uniformMatrix3fv(m_gl, name, columnMajor);
 }
 
-bool ShaderProgramGlBoundBorrow::setMat3(const std::string_view name, const cadm::Mat3& value) const {
-    return m_borrowedProgram.setMat3(m_gl, name, value);
+bool ShaderProgramGlBoundBorrow::uniformMatrix3f(const std::string_view name, const Mat3f& value) const {
+    return m_borrowedProgram.uniformMatrix3f(m_gl, name, value);
 }
 
 ShaderProgramGlBoundBorrow ShaderProgram::borrowWithGlBound(Gl& gl) const {

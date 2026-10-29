@@ -49,6 +49,12 @@ class ShaderProgramGlBoundBorrow;
 /// The destructor never issues GL calls. it only asserts that the handles were
 /// released
 class ShaderProgram final {
+    using Vec2f = cadm::Vec<float, 2>;
+    using Vec3f = cadm::Vec<float, 3>;
+    using Vec4f = cadm::Vec<float, 4>;
+    using Mat3f = cadm::Mat<float, 3, 3>;
+    using Mat4f = cadm::Mat<float, 4, 4>;
+
 public:
     ShaderProgram();
     ~ShaderProgram();
@@ -74,7 +80,7 @@ public:
         Gl& gl,
         std::span<const ShaderFile> files
     );
-    static std::expected<const ShaderProgram, std::string> fromFiles(
+    static std::expected<ShaderProgram, std::string> fromFiles(
         Gl* gl,
         std::span<const ShaderFile> files
     );
@@ -114,38 +120,39 @@ public:
     [[nodiscard]] GLint location(Gl& gl, std::string_view name) const;
     [[nodiscard]] GLint location(Gl* gl, std::string_view name) const;
 
-    bool setInt(Gl& gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
-    bool setInt(Gl* gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
-    bool setIVec2(Gl& gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
-    bool setIVec2(Gl* gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
-    bool setIVec2(Gl& gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
-    bool setIVec2(Gl* gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
-    bool setFloat(Gl& gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
-    bool setFloat(Gl* gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(Gl& gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(Gl* gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(Gl& gl, std::string_view name, const cadm::Vec2& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(Gl* gl, std::string_view name, const cadm::Vec2& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(Gl& gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(Gl* gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(Gl& gl, std::string_view name, const cadm::Vec3& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(Gl* gl, std::string_view name, const cadm::Vec3& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(Gl& gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(Gl* gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(Gl& gl, std::string_view name, const cadm::Vec4& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(Gl* gl, std::string_view name, const cadm::Vec4& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform1i(Gl& gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
+    bool uniform1i(Gl* gl, std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2i(Gl& gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
+    bool uniform2i(Gl* gl, std::string_view name, int x, int y) const; // NOLINT(*-use-nodiscard)
+    bool uniform2i(Gl& gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2i(Gl* gl, std::string_view name, const cadm::Vec2I& value) const; // NOLINT(*-use-nodiscard)
+    /// Float setters use 32-bit GPU types, independently of cadm::cadf.
+    bool uniform1f(Gl& gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
+    bool uniform1f(Gl* gl, std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(Gl& gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(Gl* gl, std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(Gl& gl, std::string_view name, const Vec2f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(Gl* gl, std::string_view name, const Vec2f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(Gl& gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(Gl* gl, std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(Gl& gl, std::string_view name, const Vec3f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(Gl* gl, std::string_view name, const Vec3f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(Gl& gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(Gl* gl, std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(Gl& gl, std::string_view name, const Vec4f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(Gl* gl, std::string_view name, const Vec4f& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 16 floats in column-major order
-    bool setMat4(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat4(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat4(Gl& gl, std::string_view name, const cadm::Mat4& value) const; // NOLINT(*-use-nodiscard)
-    bool setMat4(Gl* gl, std::string_view name, const cadm::Mat4& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4fv(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4fv(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4f(Gl& gl, std::string_view name, const Mat4f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4f(Gl* gl, std::string_view name, const Mat4f& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 9 floats in column-major order
-    bool setMat3(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat3(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat3(Gl& gl, std::string_view name, const cadm::Mat3& value) const; // NOLINT(*-use-nodiscard)
-    bool setMat3(Gl* gl, std::string_view name, const cadm::Mat3& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3fv(Gl& gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3fv(Gl* gl, std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3f(Gl& gl, std::string_view name, const Mat3f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3f(Gl* gl, std::string_view name, const Mat3f& value) const; // NOLINT(*-use-nodiscard)
 
 
 private:

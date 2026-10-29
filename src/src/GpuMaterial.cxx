@@ -30,12 +30,12 @@ std::expected<GpuMaterial, std::string> GpuMaterial::upload(Gl& gl, const Materi
 }
 
 void GpuMaterial::bind(Gl& gl, const ShaderProgram& shader) const {
-    shader.setVec3(gl, "uDiffuseColor", m_material.diffuseColor);
-    shader.setVec3(gl, "uSpecularColor", m_material.specularColor);
-    shader.setFloat(gl, "uShininess", m_material.shininess);
-    shader.setFloat(gl, "uOpacity", m_material.opacity);
-    shader.setInt(gl, "uHasDiffuseMap", m_diffuse.valid() ? 1 : 0);
-    shader.setInt(gl, "uDiffuseMap", 0);
+    shader.uniform3f(gl, "uDiffuseColor", m_material.diffuseColor);
+    shader.uniform3f(gl, "uSpecularColor", m_material.specularColor);
+    shader.uniform1f(gl, "uShininess", m_material.shininess);
+    shader.uniform1f(gl, "uOpacity", m_material.opacity);
+    shader.uniform1i(gl, "uHasDiffuseMap", m_diffuse.valid() ? 1 : 0);
+    shader.uniform1i(gl, "uDiffuseMap", 0);
 
     if (m_diffuse.valid()) {
         m_diffuse.bind(gl, 0);

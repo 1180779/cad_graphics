@@ -20,6 +20,12 @@
 namespace cadg {
 
 class ShaderProgramGlBoundBorrow final {
+    using Vec2f = cadm::Vec<float, 2>;
+    using Vec3f = cadm::Vec<float, 3>;
+    using Vec4f = cadm::Vec<float, 4>;
+    using Mat3f = cadm::Mat<float, 3, 3>;
+    using Mat4f = cadm::Mat<float, 4, 4>;
+
 public:
     ShaderProgramGlBoundBorrow(const ShaderProgram& program, Gl& gl)
         : m_borrowedProgram(program), m_gl(gl) {}
@@ -39,25 +45,25 @@ public:
 
     [[nodiscard]] GLint location(std::string_view name) const;
 
-    bool setInt(std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
-    bool setIVec2(std::string_view name, int x, int y) const { // NOLINT(*-use-nodiscard)
-        return m_borrowedProgram.setIVec2(m_gl, name, x, y);
+    bool uniform1i(std::string_view name, int value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2i(std::string_view name, int x, int y) const { // NOLINT(*-use-nodiscard)
+        return m_borrowedProgram.uniform2i(m_gl, name, x, y);
     }
-    bool setFloat(std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
-    bool setVec2(std::string_view name, const cadm::Vec2& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
-    bool setVec3(std::string_view name, const cadm::Vec3& value) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
-    bool setVec4(std::string_view name, const cadm::Vec4& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform1f(std::string_view name, float value) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(std::string_view name, float x, float y) const; // NOLINT(*-use-nodiscard)
+    bool uniform2f(std::string_view name, const Vec2f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(std::string_view name, float x, float y, float z) const; // NOLINT(*-use-nodiscard)
+    bool uniform3f(std::string_view name, const Vec3f& value) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(std::string_view name, float x, float y, float z, float w) const; // NOLINT(*-use-nodiscard)
+    bool uniform4f(std::string_view name, const Vec4f& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 16 floats in column-major order
-    bool setMat4(std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat4(std::string_view name, const cadm::Mat4& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4fv(std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix4f(std::string_view name, const Mat4f& value) const; // NOLINT(*-use-nodiscard)
 
     /// @param columnMajor 9 floats in column-major order
-    bool setMat3(std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
-    bool setMat3(std::string_view name, const cadm::Mat3& value) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3fv(std::string_view name, const float* columnMajor) const; // NOLINT(*-use-nodiscard)
+    bool uniformMatrix3f(std::string_view name, const Mat3f& value) const; // NOLINT(*-use-nodiscard)
 private:
     const ShaderProgram& m_borrowedProgram;
     Gl& m_gl;
