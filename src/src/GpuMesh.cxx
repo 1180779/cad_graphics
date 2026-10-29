@@ -17,7 +17,8 @@
 namespace cadg {
 namespace {
 
-void releaseHandles(Gl& gl, GLuint& vao, GLuint& vbo, GLuint& ebo) {
+void releaseHandles(Gl& gl, VertexArray& vertexArray, GLuint& vbo, GLuint& ebo) {
+    vertexArray.destroy(gl);
     if (ebo != 0) {
         gl.glDeleteBuffers(1, &ebo);
         ebo = 0;
@@ -25,10 +26,6 @@ void releaseHandles(Gl& gl, GLuint& vao, GLuint& vbo, GLuint& ebo) {
     if (vbo != 0) {
         gl.glDeleteBuffers(1, &vbo);
         vbo = 0;
-    }
-    if (vao != 0) {
-        gl.glDeleteVertexArrays(1, &vao);
-        vao = 0;
     }
 }
 
@@ -68,29 +65,7 @@ MeshView viewOf(const MeshData& mesh) {
     };
 }
 
-std::size_t componentSize(const GLenum type) {
-    switch (type) {
-    case GL_BYTE:
-    case GL_UNSIGNED_BYTE:
-        return 1;
-    case GL_SHORT:
-    case GL_UNSIGNED_SHORT:
-    case GL_HALF_FLOAT:
-        return 2;
-    case GL_INT:
-    case GL_UNSIGNED_INT:
-    case GL_FLOAT:
-    case GL_FIXED:
-        return 4;
-    default:
-        return 0;
-    }
-}
-
-std::expected<void, std::string> validateMeshView(
-    const MeshView& mesh,
-    const GLint maxAttributes
-) {
+std::expected<void, std::string> validateMeshView(const MeshView& mesh) {
     if (mesh.vertexCount == 0 || mesh.vertices.empty() || mesh.indices.empty()) {
         return std::unexpected("cannot upload an empty mesh");
     }
@@ -122,46 +97,18 @@ std::expected<void, std::string> validateMeshView(
         return std::unexpected("mesh index is out of range");
     }
 
-    for (std::size_t i = 0; i < mesh.layout.attributes.size(); ++i) {
-        const VertexAttribute& attribute = mesh.layout.attributes[i];
-
-        if (attribute.location >= static_cast<GLuint>(maxAttributes)) {
-            return std::unexpected("vertex attribute location is out of range");
-        }
-        if (attribute.components < 1 || attribute.components > 4) {
-            return std::unexpected("vertex attribute must have between 1 and 4 components");
-        }
-
-        const std::size_t typeSize = componentSize(attribute.type);
-        if (typeSize == 0) {
-            return std::unexpected("unsupported vertex attribute type");
-        }
-
-        const std::size_t attributeBytes = typeSize * static_cast<std::size_t>(attribute.components);
-        if (attribute.offset > mesh.layout.stride
-            || attributeBytes > mesh.layout.stride - attribute.offset) {
-            return std::unexpected("vertex attribute exceeds the vertex stride");
-        }
-
-        for (std::size_t j = 0; j < i; ++j) {
-            if (mesh.layout.attributes[j].location == attribute.location) {
-                return std::unexpected("duplicate vertex attribute location");
-            }
-        }
-    }
-
     return {};
 }
 
 } // namespace
 
 GpuMesh::~GpuMesh() {
-    assert(m_vao == 0 && m_vbo == 0 && m_ebo == 0 &&
+    assert(!m_vertexArray.valid() && m_vbo == 0 && m_ebo == 0 &&
         "GpuMesh destroyed with live GL handles; call destroy() first");
 }
 
 GpuMesh::GpuMesh(GpuMesh&& other) noexcept
-    : m_vao(std::exchange(other.m_vao, 0)),
+    : m_vertexArray(std::move(other.m_vertexArray)),
       m_vbo(std::exchange(other.m_vbo, 0)),
       m_ebo(std::exchange(other.m_ebo, 0)),
       m_indexCount(std::exchange(other.m_indexCount, 0)) {
@@ -171,9 +118,9 @@ GpuMesh& GpuMesh::operator=(GpuMesh&& other) noexcept {
     if (this == &other) {
         return *this;
     }
-    assert(m_vao == 0 && m_vbo == 0 && m_ebo == 0 &&
+    assert(!m_vertexArray.valid() && m_vbo == 0 && m_ebo == 0 &&
         "move-assigned over a live GpuMesh; call destroy() first");
-    m_vao = std::exchange(other.m_vao, 0);
+    m_vertexArray = std::move(other.m_vertexArray);
     m_vbo = std::exchange(other.m_vbo, 0);
     m_ebo = std::exchange(other.m_ebo, 0);
     m_indexCount = std::exchange(other.m_indexCount, 0);
@@ -185,71 +132,48 @@ std::expected<GpuMesh, std::string> GpuMesh::upload(Gl& gl, const MeshData& mesh
 }
 
 std::expected<GpuMesh, std::string> GpuMesh::upload(Gl& gl, const MeshView& mesh) {
-    GLint maxAttributes = 0;
-    gl.glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttributes);
-    if (maxAttributes <= 0) {
-        return std::unexpected("could not query GL_MAX_VERTEX_ATTRIBS");
-    }
-
     const auto describe = [&mesh](std::string message) {
         return mesh.name.empty()
                    ? message
                    : std::string(mesh.name) + ": " + message;
     };
 
-    if (auto valid = validateMeshView(mesh, maxAttributes); !valid) {
+    if (auto valid = validateMeshView(mesh); !valid) {
         return std::unexpected(describe(valid.error()));
     }
 
     clearGlErrors(gl);
 
     GpuMesh result;
-    gl.glGenVertexArrays(1, &result.m_vao);
-    gl.glGenBuffers(1, &result.m_vbo);
-    gl.glGenBuffers(1, &result.m_ebo);
+    gl.glCreateBuffers(1, &result.m_vbo);
+    gl.glCreateBuffers(1, &result.m_ebo);
 
-    if (result.m_vao == 0 || result.m_vbo == 0 || result.m_ebo == 0) {
-        releaseHandles(gl, result.m_vao, result.m_vbo, result.m_ebo);
+    if (result.m_vbo == 0 || result.m_ebo == 0) {
+        releaseHandles(gl, result.m_vertexArray, result.m_vbo, result.m_ebo);
         return std::unexpected(describe("failed to allocate GL mesh handles"));
     }
 
-    gl.glBindVertexArray(result.m_vao);
-
-    gl.glBindBuffer(GL_ARRAY_BUFFER, result.m_vbo);
-    gl.glBufferData(
-        GL_ARRAY_BUFFER,
+    auto vertexArray = VertexArray::create(gl, result.m_vbo, mesh.layout, result.m_ebo);
+    if (!vertexArray) {
+        releaseHandles(gl, result.m_vertexArray, result.m_vbo, result.m_ebo);
+        return std::unexpected(describe(std::move(vertexArray.error())));
+    }
+    result.m_vertexArray = std::move(*vertexArray);
+    gl.glNamedBufferData(
+        result.m_vbo,
         static_cast<GLsizeiptr>(mesh.vertexCount * mesh.layout.stride),
         mesh.vertices.data(),
         GL_STATIC_DRAW
     );
-
-    gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.m_ebo);
-    gl.glBufferData(
-        GL_ELEMENT_ARRAY_BUFFER,
+    gl.glNamedBufferData(
+        result.m_ebo,
         static_cast<GLsizeiptr>(mesh.indices.size() * sizeof(std::uint32_t)),
         mesh.indices.data(),
         GL_STATIC_DRAW
     );
 
-    const auto stride = static_cast<GLsizei>(mesh.layout.stride);
-    for (const VertexAttribute& attribute : mesh.layout.attributes) {
-        gl.glEnableVertexAttribArray(attribute.location);
-        gl.glVertexAttribPointer(
-            attribute.location,
-            attribute.components,
-            attribute.type,
-            attribute.normalized,
-            stride,
-            reinterpret_cast<const void*>(static_cast<std::uintptr_t>(attribute.offset))
-        );
-    }
-
-    gl.glBindVertexArray(0);
-    gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
     if (const GLenum error = gl.glGetError(); error != GL_NO_ERROR) {
-        releaseHandles(gl, result.m_vao, result.m_vbo, result.m_ebo);
+        releaseHandles(gl, result.m_vertexArray, result.m_vbo, result.m_ebo);
         return std::unexpected(describe(
             "OpenGL error while uploading mesh (code " + std::to_string(error) + ")"
         ));
@@ -260,7 +184,7 @@ std::expected<GpuMesh, std::string> GpuMesh::upload(Gl& gl, const MeshView& mesh
 }
 
 void GpuMesh::destroy(Gl& gl) {
-    releaseHandles(gl, m_vao, m_vbo, m_ebo);
+    releaseHandles(gl, m_vertexArray, m_vbo, m_ebo);
     m_indexCount = 0;
 }
 

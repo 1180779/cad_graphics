@@ -13,6 +13,7 @@
 #include "Gl.hxx"
 #include "MeshData.hxx"
 #include "VertexLayout.hxx"
+#include "VertexArray.hxx"
 
 namespace cadg {
 
@@ -38,18 +39,18 @@ public:
     /// @tparam Primitive primitive mode used by glDrawElements
     template <GLenum Primitive = GL_TRIANGLES>
     void draw(Gl& gl) const {
-        if (m_vao == 0 || m_indexCount == 0) {
+        if (!m_vertexArray.valid() || m_indexCount == 0) {
             return;
         }
-        gl.glBindVertexArray(m_vao);
+        m_vertexArray.bind(gl);
         gl.glDrawElements(Primitive, m_indexCount, GL_UNSIGNED_INT, nullptr);
-        gl.glBindVertexArray(0);
+        VertexArray::unbind(gl);
     }
 
     void destroy(Gl& gl);
 
     [[nodiscard]] bool valid() const {
-        return m_vao != 0;
+        return m_vertexArray.valid();
     }
 
     [[nodiscard]] GLsizei indexCount() const {
@@ -57,11 +58,11 @@ public:
     }
 
     [[nodiscard]] GLuint vao() const {
-        return m_vao;
+        return m_vertexArray.id();
     }
 
 private:
-    GLuint m_vao = 0;
+    VertexArray m_vertexArray;
     GLuint m_vbo = 0;
     GLuint m_ebo = 0;
     GLsizei m_indexCount = 0;
