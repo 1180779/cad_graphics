@@ -46,6 +46,7 @@ void GlStateSnapshot::save(QOpenGLFunctions_4_5_Core* gl) {
     oldScissor = gl->glIsEnabled(GL_SCISSOR_TEST);
     oldBlend = gl->glIsEnabled(GL_BLEND);
     oldDepth = gl->glIsEnabled(GL_DEPTH_TEST);
+    oldStencil = gl->glIsEnabled(GL_STENCIL_TEST);
     oldCull = gl->glIsEnabled(GL_CULL_FACE);
     gl->glGetBooleanv(GL_DEPTH_WRITEMASK, &oldDepthMask);
     gl->glGetIntegerv(GL_DEPTH_FUNC, &oldDepthFunc);
@@ -80,6 +81,7 @@ void GlStateSnapshot::restore(QOpenGLFunctions_4_5_Core* gl) const {
     );
     restoreCap(gl, GL_BLEND, oldBlend);
     restoreCap(gl, GL_DEPTH_TEST, oldDepth);
+    restoreCap(gl, GL_STENCIL_TEST, oldStencil);
     restoreCap(gl, GL_CULL_FACE, oldCull);
     gl->glDepthMask(oldDepthMask);
     gl->glDepthFunc(static_cast<GLenum>(oldDepthFunc));

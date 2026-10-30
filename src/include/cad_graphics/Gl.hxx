@@ -35,6 +35,7 @@ struct GlStateSnapshot {
     GLboolean oldScissor = false;
     GLboolean oldBlend = false;
     GLboolean oldDepth = false;
+    GLboolean oldStencil = false;
     GLboolean oldCull = false;
     GLboolean oldDepthMask = GL_TRUE;
     GLint oldDepthFunc = GL_LESS;
@@ -43,7 +44,7 @@ struct GlStateSnapshot {
     void save(QOpenGLFunctions_4_5_Core* gl);
     void restore(QOpenGLFunctions_4_5_Core* gl) const;
     static GlStateSnapshot create(QOpenGLFunctions_4_5_Core* gl);
-    
+
 private:
     static void restoreCap(QOpenGLFunctions_4_5_Core* gl, GLenum cap, GLboolean enable);
 };
